@@ -1,0 +1,55 @@
+import nltk
+import csv
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import opinion_lexicon
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+# Download NLTK resources
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('opinion_lexicon')
+
+# Sample polarity words
+positive_words = set(opinion_lexicon.positive())
+negative_words = set(opinion_lexicon.negative())
+
+# Function to preprocess text
+def preprocess_text(text):
+    # Tokenization
+    tokens = word_tokenize(text.lower())
+    
+    # Remove stopwords and non-alphabetic tokens
+    tokens = [word for word in tokens if word.isalpha() and word not in stopwords.words('english')]
+    
+    # Lemmatization
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    return ' '.join(tokens)
+
+documents = []
+with open('Reviews.csv', newline='',encoding='utf-8') as csvfile:
+    csv_reader = csv.reader(csvfile)
+    for row in csv_reader:
+        documents.append(row[0])
+
+# Create TF-IDF vectorizer
+vectorizer = TfidfVectorizer()
+
+# Transform the documents into TF-IDF vectors
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(tfidf_matrix, labels, test_size=0.2, random_state=42)
+
+# Example prediction
+new_document = "I had bad experience"
+preprocessed_new_doc = preprocess_text(new_document)
+new_doc_tfidf = vectorizer.transform([preprocessed_new_doc])
+prediction = classifier.predict(new_doc_tfidf)
+print("Predicted sentiment for the document:", prediction[0])
